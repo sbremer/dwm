@@ -1,0 +1,56 @@
+commit 24299fef9ffd9ebb4d6f87accb797171d033b0fb
+Author: Simon Bremer <simon.bremer@tum.de>
+Date:   Thu Dec 22 19:46:24 2016 +0100
+
+    Applied clickonfocus patch;
+
+diff --git a/config.def.h b/config.def.h
+index ba9a240..00a4110 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -18,6 +18,9 @@ static const char *colors[][3]      = {
+ 	[SchemeSel] =  { col_gray4, col_cyan,  col_cyan  },
+ };
+ 
++/* False means using the scroll wheel on a window will not change focus */
++static const Bool focusonwheelscroll = False;
++
+ /* tagging */
+ static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+ 
+diff --git a/dwm.c b/dwm.c
+index d27cb67..51f17bb 100644
+--- a/dwm.c
++++ b/dwm.c
+@@ -250,7 +250,6 @@ static void (*handler[LASTEvent]) (XEvent *) = {
+ 	[ConfigureRequest] = configurerequest,
+ 	[ConfigureNotify] = configurenotify,
+ 	[DestroyNotify] = destroynotify,
+-	[EnterNotify] = enternotify,
+ 	[Expose] = expose,
+ 	[FocusIn] = focusin,
+ 	[KeyPress] = keypress,
+@@ -445,7 +444,9 @@ buttonpress(XEvent *e)
+ 		else
+ 			click = ClkWinTitle;
+ 	} else if ((c = wintoclient(ev->window))) {
+-		focus(c);
++		if (focusonwheelscroll || (ev->button != Button4 && ev->button != Button5))
++			focus(c);
++		XAllowEvents(dpy, ReplayPointer, CurrentTime);
+ 		click = ClkClientWin;
+ 	}
+ 	for (i = 0; i < LENGTH(buttons); i++)
+@@ -940,10 +941,10 @@ grabbuttons(Client *c, int focused)
+ 						XGrabButton(dpy, buttons[i].button,
+ 						            buttons[i].mask | modifiers[j],
+ 						            c->win, False, BUTTONMASK,
+-						            GrabModeAsync, GrabModeSync, None, None);
++						            GrabModeSync, GrabModeSync, None, None);
+ 		} else
+ 			XGrabButton(dpy, AnyButton, AnyModifier, c->win, False,
+-			            BUTTONMASK, GrabModeAsync, GrabModeSync, None, None);
++			            BUTTONMASK, GrabModeSync, GrabModeSync, None, None);
+ 	}
+ }
+ 
