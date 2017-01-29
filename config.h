@@ -11,8 +11,8 @@ static const int systraypinningfailfirst = 1;   /* 1: if pinning fails, display 
 static const int showsystray        = 1;     /* 0 means no systray */
 static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
-static const char *fonts[]          = { "terminus:size=11" };
-static const char dmenufont[]       = "terminus:size=11";
+static const char *fonts[]          = { "terminus:size=10" };
+static const char dmenufont[]       = "terminus:size=10";
 static const char col_gray1[]       = "#222222";
 static const char col_gray2[]       = "#444444";
 static const char col_gray3[]       = "#bbbbbb";
@@ -63,13 +63,14 @@ static const Layout layouts[] = {
 
 /* custom functions declarations */
 static void rotatewindows(const Arg *arg);
+static void tag_view(const Arg *arg);
 
 /* key definitions */
 #define MODKEY Mod1Mask
 #define TAGKEYS(KEY,TAG) \
 	{ MODKEY,                       KEY,      view,           {.ui = 1 << TAG} }, \
 	{ MODKEY|ControlMask,           KEY,      toggleview,     {.ui = 1 << TAG} }, \
-	{ MODKEY|ShiftMask,             KEY,      tag,            {.ui = 1 << TAG} }, \
+	{ MODKEY|ShiftMask,             KEY,      tag_view,       {.ui = 1 << TAG} }, \
 	{ MODKEY|ControlMask|ShiftMask, KEY,      toggletag,      {.ui = 1 << TAG} },
 
 /* helper for spawning shell commands in the pre dwm-5.0 fashion */
@@ -196,4 +197,15 @@ rotatewindows(const Arg *arg) {
 	focusstack(&arg1);
 	if(selmon->lt[selmon->sellt] != &layouts[2])
 		zoom(0);
+}
+
+void
+tag_view(const Arg *arg)
+{
+	if (selmon->sel && arg->ui & TAGMASK) {
+		selmon->sel->tags = arg->ui & TAGMASK;
+		focus(NULL);
+		arrange(selmon);
+		view(arg);
+	}
 }
